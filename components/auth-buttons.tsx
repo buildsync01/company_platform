@@ -3,10 +3,12 @@
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { usePathname } from 'next/navigation';
 
 export function AuthButtons() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
+  const pathname = usePathname();
 
   useEffect(() => {
     // Check if user is authenticated by checking for auth token
@@ -26,7 +28,12 @@ export function AuthButtons() {
     <div className="flex items-center gap-2">
       {isAuthenticated ? (
         <div className="flex items-center gap-2">
-          <Button asChild variant="outline" size="sm">
+          <Button 
+            asChild 
+            variant="ghost"
+            size="sm"
+            className={pathname === '/profile' ? 'text-[#F01457] font-semibold' : 'text-slate-300 hover:text-[#F01457]'}
+          >
             <Link href="/profile">Profile</Link>
           </Button>
           <form action="/api/auth/logout" method="post">

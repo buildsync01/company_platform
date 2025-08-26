@@ -5,7 +5,7 @@ import { db } from '@/db';
 import { companies, products, users } from '@/db/schema';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { eq, and, or, ilike } from 'drizzle-orm';
+import { eq, and, or, ilike, count } from 'drizzle-orm';
 import { cookies } from 'next/headers';
 
 const createCompanySchema = z.object({
@@ -21,43 +21,43 @@ const createCompanySchema = z.object({
 });
 
 export async function createCompany(prevState: any, formData: FormData) {
-    // Get user ID from token
-    const token = cookies().get('auth_token')?.value;
-    
-    if (!token) {
-        return { error: "You must be logged in to create a company." };
-    }
-    
-    // Dynamically import verifyToken for Turbopack compatibility
-    const { verifyToken } = await import('@/lib/auth');
-    const decodedToken = await verifyToken(token);
-    
-    if (!decodedToken) {
-        return { error: "Invalid or expired token." };
-    }
-
-    const userId = decodedToken.userId;
-
-    const validatedFields = createCompanySchema.safeParse({
-        companyName: formData.get('companyName'),
-        email: formData.get('email'),
-        phone: formData.get('phone'),
-        slogan: formData.get('slogan'),
-        about: formData.get('about'),
-        website: formData.get('website'),
-        companySize: formData.get('companySize'),
-        establishedYear: formData.get('establishedYear'),
-        category: formData.get('category'),
-    });
-
-    if (!validatedFields.success) {
-        return {
-            error: "Invalid fields",
-            fieldErrors: validatedFields.error.flatten().fieldErrors,
-        };
-    }
-
     try {
+        // Get user ID from token
+        const token = (await cookies()).get('auth_token')?.value;
+        
+        if (!token) {
+            return { error: "You must be logged in to create a company." };
+        }
+        
+        // Dynamically import verifyToken for Turbopack compatibility
+        const { verifyToken } = await import('@/lib/auth');
+        const decodedToken = await verifyToken(token);
+        
+        if (!decodedToken) {
+            return { error: "Invalid or expired token." };
+        }
+
+        const userId = decodedToken.userId;
+
+        const validatedFields = createCompanySchema.safeParse({
+            companyName: formData.get('companyName'),
+            email: formData.get('email'),
+            phone: formData.get('phone'),
+            slogan: formData.get('slogan'),
+            about: formData.get('about'),
+            website: formData.get('website'),
+            companySize: formData.get('companySize'),
+            establishedYear: formData.get('establishedYear'),
+            category: formData.get('category'),
+        });
+
+        if (!validatedFields.success) {
+            return {
+                error: "Invalid fields",
+                fieldErrors: validatedFields.error.flatten().fieldErrors,
+            };
+        }
+
         await db.insert(companies).values({
             userId: userId,
             companyName: validatedFields.data.companyName,
@@ -71,8 +71,8 @@ export async function createCompany(prevState: any, formData: FormData) {
             category: validatedFields.data.category,
         });
     } catch (error) {
-        console.error(error);
-        return { error: "Failed to create company." };
+        console.error('Error in createCompany:', error);
+        return { error: "Failed to create company. Please try again." };
     }
 
     revalidatePath('/profile');
@@ -279,12 +279,325 @@ export async function getAllProducts(page: number = 1, limit: number = 12) {
 // Function to get product count for pagination
 export async function getProductsCount() {
     try {
-        const count = await db.select({ count: db.fn.count() }).from(products);
-        return count[0].count;
+        const countResult = await db.select({ count: count() }).from(products);
+        return countResult[0].count;
     } catch (error) {
         console.error('Error fetching product count:', error);
         return 0;
     }
+}
+
+// Function to get user's company profile
+export async function getUserCompany() {
+    const token = (await cookies()).get('auth_token')?.value;
+    
+    if (!token) {
+        return null;
+    }
+    
+    const { verifyToken } = await import('@/lib/auth');
+    const decodedToken = await verifyToken(token);
+    
+    if (!decodedToken) {
+        return null;
+    }
+
+    const userId = decodedToken.userId;
+
+    try {
+        const userCompany = await db.query.companies.findFirst({
+            where: eq(companies.userId, userId),
+            with: {
+                products: true // Include products when fetching user's company
+            }
+        });
+        return userCompany;
+    } catch (error) {
+        console.error('Error fetching user company:', error);
+        return null;
+    }
+}
+
+const createProductSchema = z.object({
+    name: z.string().min(3, "Product name must be at least 3 characters"),
+    description: z.string().optional(),
+    moq: z.string().optional(),
+    priceMin: z.string().optional(),
+    priceMax: z.string().optional(),
+    unitName: z.string().optional(),
+    imageMain: z.string().optional(),
+});
+
+export async function createProduct(prevState: any, formData: FormData) {
+    try {
+        // Get user ID from token
+        const token = (await cookies()).get('auth_token')?.value;
+        
+        if (!token) {
+            return { error: "You must be logged in to create a product." };
+        }
+        
+        // Dynamically import verifyToken for Turbopack compatibility
+        const { verifyToken } = await import('@/lib/auth');
+        const decodedToken = await verifyToken(token);
+        
+        if (!decodedToken) {
+            return { error: "Invalid or expired token." };
+        }
+
+        const userId = decodedToken.userId;
+
+        // First, get the user's company
+        const userCompany = await db.query.companies.findFirst({
+            where: eq(companies.userId, userId),
+        });
+
+        if (!userCompany) {
+            return { error: "You must have a company profile to create products." };
+        }
+
+        const validatedFields = createProductSchema.safeParse({
+            name: formData.get('name'),
+            description: formData.get('description'),
+            moq: formData.get('moq'),
+            priceMin: formData.get('priceMin'),
+            priceMax: formData.get('priceMax'),
+            unitName: formData.get('unitName'),
+            imageMain: formData.get('imageMain'),
+        });
+
+        if (!validatedFields.success) {
+            return {
+                error: "Invalid fields",
+                fieldErrors: validatedFields.error.flatten().fieldErrors,
+            };
+        }
+
+        await db.insert(products).values({
+            companyId: userCompany.idCompany,
+            name: validatedFields.data.name,
+            description: validatedFields.data.description,
+            moq: validatedFields.data.moq,
+            priceMin: validatedFields.data.priceMin,
+            priceMax: validatedFields.data.priceMax,
+            unitName: validatedFields.data.unitName,
+            imageMain: validatedFields.data.imageMain,
+        });
+    } catch (error) {
+        console.error('Error in createProduct:', error);
+        return { error: "Failed to create product. Please try again." };
+    }
+
+    revalidatePath('/profile');
+    redirect('/profile');
+}
+
+// Function to get user's products
+export async function getUserProducts() {
+    const token = (await cookies()).get('auth_token')?.value;
+    
+    if (!token) {
+        return [];
+    }
+    
+    const { verifyToken } = await import('@/lib/auth');
+    const decodedToken = await verifyToken(token);
+    
+    if (!decodedToken) {
+        return [];
+    }
+
+    const userId = decodedToken.userId;
+
+    try {
+        const userCompany = await db.query.companies.findFirst({
+            where: eq(companies.userId, userId),
+        });
+
+        if (!userCompany) {
+            return [];
+        }
+
+        const userProducts = await db.query.products.findMany({
+            where: eq(products.companyId, userCompany.idCompany),
+            orderBy: (products, { desc }) => desc(products.createdAt),
+        });
+        return userProducts;
+    } catch (error) {
+        console.error('Error fetching user products:', error);
+        return [];
+    }
+}
+
+const updateProductSchema = z.object({
+    idProduct: z.string(),
+    name: z.string().min(3, "Product name must be at least 3 characters"),
+    description: z.string().optional(),
+    moq: z.string().optional(),
+    priceMin: z.string().optional(),
+    priceMax: z.string().optional(),
+    unitName: z.string().optional(),
+    imageMain: z.string().optional(),
+});
+
+export async function updateProduct(prevState: any, formData: FormData) {
+    try {
+        const token = (await cookies()).get('auth_token')?.value;
+        
+        if (!token) {
+            return { error: "You must be logged in to update a product." };
+        }
+        
+        const { verifyToken } = await import('@/lib/auth');
+        const decodedToken = await verifyToken(token);
+        
+        if (!decodedToken) {
+            return { error: "Invalid or expired token." };
+        }
+
+        const userId = decodedToken.userId;
+
+        // First, get the user's company
+        const userCompany = await db.query.companies.findFirst({
+            where: eq(companies.userId, userId),
+        });
+
+        if (!userCompany) {
+            return { error: "You must have a company profile to update products." };
+        }
+
+        const validatedFields = updateProductSchema.safeParse({
+            idProduct: formData.get('idProduct'),
+            name: formData.get('name'),
+            description: formData.get('description'),
+            moq: formData.get('moq'),
+            priceMin: formData.get('priceMin'),
+            priceMax: formData.get('priceMax'),
+            unitName: formData.get('unitName'),
+            imageMain: formData.get('imageMain'),
+        });
+
+        if (!validatedFields.success) {
+            return {
+                error: "Invalid fields",
+                fieldErrors: validatedFields.error.flatten().fieldErrors,
+            };
+        }
+
+        await db.update(products)
+            .set({
+                name: validatedFields.data.name,
+                description: validatedFields.data.description,
+                moq: validatedFields.data.moq,
+                priceMin: validatedFields.data.priceMin,
+                priceMax: validatedFields.data.priceMax,
+                unitName: validatedFields.data.unitName,
+                imageMain: validatedFields.data.imageMain,
+                updatedAt: new Date(),
+            })
+            .where(
+                and(
+                    eq(products.idProduct, validatedFields.data.idProduct),
+                    eq(products.companyId, userCompany.idCompany)
+                )
+            );
+    } catch (error) {
+        console.error('Error in updateProduct:', error);
+        return { error: "Failed to update product. Please try again." };
+    }
+
+    revalidatePath('/profile');
+    return { success: true };
+}
+
+export async function deleteProduct(productId: string) {
+    try {
+        const token = (await cookies()).get('auth_token')?.value;
+        
+        if (!token) {
+            return { error: "You must be logged in to delete a product." };
+        }
+        
+        const { verifyToken } = await import('@/lib/auth');
+        const decodedToken = await verifyToken(token);
+        
+        if (!decodedToken) {
+            return { error: "Invalid or expired token." };
+        }
+
+        const userId = decodedToken.userId;
+
+        // First, get the user's company
+        const userCompany = await db.query.companies.findFirst({
+            where: eq(companies.userId, userId),
+        });
+
+        if (!userCompany) {
+            return { error: "You must have a company profile to delete products." };
+        }
+
+        await db.delete(products)
+            .where(
+                and(
+                    eq(products.idProduct, productId),
+                    eq(products.companyId, userCompany.idCompany)
+                )
+            );
+    } catch (error) {
+        console.error('Error in deleteProduct:', error);
+        return { error: "Failed to delete product. Please try again." };
+    }
+
+    revalidatePath('/profile');
+    redirect('/profile');
+}
+
+export async function deleteProductAction(prevState: any, formData: FormData) {
+    try {
+        const productId = formData.get('productId') as string;
+        
+        if (!productId) {
+            return { error: "Product ID is required." };
+        }
+        
+        const token = (await cookies()).get('auth_token')?.value;
+        
+        if (!token) {
+            return { error: "You must be logged in to delete a product." };
+        }
+        
+        const { verifyToken } = await import('@/lib/auth');
+        const decodedToken = await verifyToken(token);
+        
+        if (!decodedToken) {
+            return { error: "Invalid or expired token." };
+        }
+
+        const userId = decodedToken.userId;
+
+        // First, get the user's company
+        const userCompany = await db.query.companies.findFirst({
+            where: eq(companies.userId, userId),
+        });
+
+        if (!userCompany) {
+            return { error: "You must have a company profile to delete products." };
+        }
+
+        await db.delete(products)
+            .where(
+                and(
+                    eq(products.idProduct, productId),
+                    eq(products.companyId, userCompany.idCompany)
+                )
+            );
+    } catch (error) {
+        console.error('Error in deleteProductAction:', error);
+        return { error: "Failed to delete product. Please try again." };
+    }
+
+    revalidatePath('/profile');
+    redirect('/profile');
 }
 
 // Function to search products

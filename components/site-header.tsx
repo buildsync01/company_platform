@@ -17,6 +17,7 @@ export function SiteHeader({ currentPage }: SiteHeaderProps = {}) {
     if (pathname.startsWith('/explore')) return 'explore';
     if (pathname.startsWith('/products')) return 'products';
     if (pathname.startsWith('/suppliers')) return 'suppliers';
+    if (pathname.startsWith('/profile')) return 'profile';
     return 'home';
   })();
 
