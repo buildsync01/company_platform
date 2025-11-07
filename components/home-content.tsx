@@ -169,17 +169,17 @@ export default function HomeContent({ initialCompanies, initialFeaturedProducts 
       let newFeaturedProductsData: (ProductType & { company: CompanyType })[] = [];
 
       if (searchQuery) {
-        // If there's a search query, search across companies
-        newCompaniesData = await searchCompaniesFull(searchQuery);
-        // For featured products, we can also filter but for now just get all featured
-        newFeaturedProductsData = await getFeaturedProducts(8);
+        // If there's a search query, redirect to explore page
+        window.location.href = `/explore?q=${encodeURIComponent(searchQuery)}`;
+        return; // Stop execution here
       } else if (category && category !== 'all') {
-        // If there's a category filter
-        newCompaniesData = await getCompaniesByCategory(category);
-        newFeaturedProductsData = await getFeaturedProducts(8);
+        // If there's a category filter, redirect to explore page
+        window.location.href = `/explore?category=${encodeURIComponent(category)}`;
+        return; // Stop execution here
       } else {
-        // Default: get all companies and featured products
-        newCompaniesData = await getAllCompanies();
+        // Default: get only first 4 companies and featured products
+        const allCompanies = await getAllCompanies();
+        newCompaniesData = allCompanies.slice(0, 4); // Only show first 4 companies on homepage
         newFeaturedProductsData = await getFeaturedProducts(8);
       }
 

@@ -1,5 +1,6 @@
 // 🗃️ db/schema.ts
 import { pgTable, text, timestamp, boolean, integer, uuid, primaryKey } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
 import { relations } from 'drizzle-orm';
 import { createId } from '@paralleldrive/cuid2';
 
@@ -50,11 +51,12 @@ export const companies = pgTable('companies', {
   slogan: text('slogan'),
   imageProfile: text('image_profile'),
   imageBanner: text('image_banner'),
-  cityId: text('city_id'),
+  cityName: text('city_name'),
+  countryName: text('country_name'),
   companySize: text('company_size'),
   about: text('about'),
   website: text('website'),
-  companyType: text('company_type'),
+  companyType: text('company_type'), // Enum: 'private_company' | 'public_company'
   establishedYear: text('established_year'),
   category: text('category'),
   status: text('status'),

@@ -169,6 +169,25 @@ export async function getCompaniesByCategory(category: string) {
     }
 }
 
+// Function to get companies by category (for explore page)
+export async function getCompaniesByCategoryWithLimit(category: string, limit: number = 50) {
+    try {
+        if (!category || category === 'all') {
+            return await getLimitedCompanies(limit);
+        }
+        
+        const companiesList = await db.query.companies.findMany({
+            where: eq(companies.category, category),
+            orderBy: (companies, { desc }) => desc(companies.createdAt),
+            limit: limit,
+        });
+        return companiesList;
+    } catch (error) {
+        console.error('Error fetching companies by category:', error);
+        return [];
+    }
+}
+
 // Function to search companies and products
 export async function searchCompaniesAndProducts(query: string) {
     try {
@@ -220,6 +239,20 @@ export async function searchCompanies(query: string) {
         return searchResults;
     } catch (error) {
         console.error('Error searching companies:', error);
+        return [];
+    }
+}
+
+// Function to get limited companies (for homepage - only first 4)
+export async function getLimitedCompanies(limit: number = 50) { // Increased default limit for explore page
+    try {
+        const companiesList = await db.query.companies.findMany({
+            orderBy: (companies, { desc }) => desc(companies.createdAt),
+            limit: limit,
+        });
+        return companiesList;
+    } catch (error) {
+        console.error('Error fetching limited companies:', error);
         return [];
     }
 }
