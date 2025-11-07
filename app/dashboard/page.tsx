@@ -1,18 +1,32 @@
-import { ChartAreaInteractive } from "@//components/chart-area-interactive"
-import { DataTable } from "@//components/data-table"
-import { SectionCards } from "@//components/section-cards"
-import data from "@/app/dashboard/data.json"
+// app/dashboard/page.tsx (Server Component)
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { requireAuth } from '@/lib/protected-route';
 
-export default function Page() {
+export default async function DashboardPage() {
+  const user = await requireAuth();
+
   return (
-    <div className="@container/main flex flex-1 flex-col gap-2">
-      <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-        <SectionCards />
-        <div className="px-4 lg:px-6">
-          <ChartAreaInteractive />
-        </div>
-        <DataTable data={data} />
-      </div>
+    <div className="container mx-auto py-10">
+      <Card className="max-w-3xl mx-auto">
+        <CardHeader>
+          <CardTitle>Dashboard</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-lg font-medium">Welcome, {user.email}!</h3>
+              <p className="text-muted-foreground">This is your protected dashboard.</p>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row gap-4 pt-4">
+              <Button formAction="/api/auth/logout" variant="destructive">
+                Logout
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
-  )
+  );
 }

@@ -1,0 +1,58 @@
+[
+  {
+    "email": "supplier1@company.com",
+    "firstName": "Ahmad",
+    "lastName": "Suparman",
+    "username": "ahmadsuparman",
+    "password": "SecurePassword123!",
+    "companyData": {
+      "companyName": "PT Maju Jaya",
+      "email": "info@majujaya.com",
+      "phone": "021-12345678",
+      "slogan": "Maju Terus Pantang Mundur",
+      "about": "Perusahaan manufaktur terkemuka di Indonesia",
+      "website": "https://www.majujaya.com",
+      "companySize": "50-100",
+      "establishedYear": "2010",
+      "category": "Manufacturing",
+      "status": "active"
+    }
+  },
+  {
+    "email": "supplier2@company.com",
+    "firstName": "Siti",
+    "lastName": "Aminah",
+    "username": "siti_aminah",
+    "password": "AnotherSecurePassword456!",
+    "companyData": {
+      "companyName": "CV Berkah Abadi",
+      "email": "contact@berkahabadi.com",
+      "phone": "021-87654321",
+      "slogan": "Berkah untuk semua",
+      "about": "Distributor barang elektronik terpercaya",
+      "website": "https://www.berkahabadi.com",
+      "companySize": "20-50",
+      "establishedYear": "2015",
+      "category": "Electronics",
+      "status": "active"
+    }
+  },
+  {
+    "email": "supplier3@company.com",
+    "firstName": "Budi",
+    "lastName": "Santoso",
+    "username": "budisantoso",
+    "companyData": {
+      "companyName": "UD Jaya Makmur",
+      "email": "admin@jayamakmur.com",
+      "phone": "021-56781234",
+      "slogan": "Makmur bersama pelanggan",
+      "about": "Perusahaan tekstil yang berpengalaman",
+      "website": "https://www.jayamakmur.com",
+      "companySize": "100-200",
+      "establishedYear": "2008",
+      "category": "Textile",
+      "status": "active"
+    }
+  }
+]

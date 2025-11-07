@@ -1,18 +1,25 @@
-import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
-import { SidebarTrigger } from "@/components/ui/sidebar"
+import Link from "next/link";
+import { AuthButtons } from "@/components/auth-buttons";
+import { Button } from "./ui/button";
 
 export function SiteHeader() {
   return (
-    <header className="flex h-(--header-height) shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)">
-      <div className="flex w-full items-center gap-1 px-4 lg:gap-2 lg:px-6">
-        <SidebarTrigger className="-ml-1" />
-        <Separator
-          orientation="vertical"
-          className="mx-2 data-[orientation=vertical]:h-4"
-        />
-        <h1 className="text-base font-medium">Dashboard</h1>
+    <header className="fixed top-0 w-full z-50 bg-[#1a1a1a]/80 backdrop-blur-md border-b border-[#2d2d2d]">
+      <div className="container mx-auto flex h-16 items-center justify-between px-4">
+        <Link href="/" className="flex items-center gap-2">
+          <span className="text-xl font-bold bg-gradient-to-r from-[#F01457] to-[#F01457]/80 text-transparent bg-clip-text">
+            B2B Directory
+          </span>
+        </Link>
+        <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-300">
+          <Link href="#" className="hover:text-[#F01457] transition-colors">Explore Companies</Link>
+          <Link href="#" className="hover:text-[#F01457] transition-colors">Products</Link>
+          <Link href="#" className="hover:text-[#F01457] transition-colors">For Suppliers</Link>
+        </nav>
+        <div className="flex items-center gap-2">
+          <AuthButtons />
+        </div>
       </div>
     </header>
-  )
+  );
 }

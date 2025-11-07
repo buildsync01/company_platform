@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation"
 import { useState } from "react"
-import { signOut } from "@/lib/auth-client"
+import { signOut } from "@/lib/session-provider"
 import {
   IconCreditCard,
   IconDotsVertical,

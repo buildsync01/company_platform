@@ -1,0 +1,4 @@
+email,firstName,lastName,username,password
+john.doe@example.com,John,Doe,johndoe,SecurePassword123!
+jane.smith@example.com,Jane,Smith,janesmith,AnotherSecurePassword456!
+bob.johnson@example.com,Bob,Johnson,bobjohnson,

@@ -3,7 +3,7 @@
 import * as React from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { useSession } from "@/lib/auth-client"
+import { useSession } from "@/lib/session-provider"
 import {
   IconCamera,
   IconChartBar,
@@ -148,16 +148,26 @@ const staticData = {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { data: session } = useSession()
+  const { user, isLoading } = useSession();
   
-  const userData = session?.user ? {
-    name: session.user.name || "User",
-    email: session.user.email,
-    avatar: session.user.image || "/codeguide-logo.png",
+  const userData = user ? {
+    name: user.name || user.email.split('@')[0] || "User",
+    email: user.email,
+    avatar: "/codeguide-logo.png", // Using default avatar for now
   } : {
     name: "Guest",
     email: "guest@example.com", 
     avatar: "/codeguide-logo.png",
+  };
+
+  if (isLoading) {
+    return (
+      <Sidebar collapsible="offcanvas" {...props}>
+        <SidebarHeader>
+          <div className="p-2">Loading...</div>
+        </SidebarHeader>
+      </Sidebar>
+    );
   }
 
   return (

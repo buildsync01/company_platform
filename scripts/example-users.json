@@ -1,0 +1,23 @@
+[
+  {
+    "email": "supplier1@company.com",
+    "firstName": "Ahmad",
+    "lastName": "Suparman",
+    "username": "ahmadsuparman",
+    "password": "SecurePassword123!"
+  },
+  {
+    "email": "supplier2@company.com",
+    "firstName": "Siti",
+    "lastName": "Aminah",
+    "username": "siti_aminah",
+    "password": "AnotherSecurePassword456!"
+  },
+  {
+    "email": "supplier3@company.com",
+    "firstName": "Budi",
+    "lastName": "Santoso",
+    "username": "budisantoso"
+    // Password opsional - jika tidak disertakan, user akan diminta reset password saat login pertama
+  }
+]
