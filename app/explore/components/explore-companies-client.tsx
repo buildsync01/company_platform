@@ -6,106 +6,14 @@ import { getLimitedCompanies, getCompaniesByCategoryWithLimit, searchCompanies }
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import Image from 'next/image';
 import Link from 'next/link';
 import { Product, Company } from '@/db/schema';
+import { CompanyCard } from '@/components/company-card';
+import { CompanyCardSkeleton } from '@/components/company-card-skeleton';
 
 // Define types for our data
 type ProductType = typeof Product.$inferSelect;
 type CompanyType = typeof Company.$inferSelect;
-
-// Component to display a company card
-function CompanyCard({ company }: { company: CompanyType }) {
-  return (
-    <Card className="bg-[#222222] rounded-2xl border border-[#2d2d2d] overflow-hidden hover:shadow-[0_0_30px_#F01457]/20 transition-shadow duration-300 group">
-      {/* Company Image Header */}
-      <div className="relative aspect-video overflow-hidden">
-        {company.imageProfile ? (
-          <Image 
-            src={company.imageProfile} 
-            alt={company.companyName} 
-            fill
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          />
-        ) : (
-          <div className="w-full h-full bg-gradient-to-br from-[#2a2a2a] to-[#333333] flex items-center justify-center">
-            <div className="text-4xl text-[#F01457] font-bold">
-              {company.companyName.charAt(0).toUpperCase()}
-            </div>
-          </div>
-        )}
-      </div>
-      
-      {/* Company Info Section */}
-      <div className="p-5">
-        {/* Category as chip */}
-        {company.category && (
-          <div className="inline-block bg-[#F01457]/20 text-[#F01457] text-xs px-3 py-1 rounded-full font-medium mb-3">
-            {company.category}
-          </div>
-        )}
-        
-        <h3 className="font-bold text-lg text-white mb-2 truncate">{company.companyName}</h3>
-        <p className="text-slate-400 text-sm mb-4 line-clamp-2 h-10">{company.slogan || company.about || 'No description available'}</p>
-        
-        {/* Additional Info Chips */}
-        <div className="flex flex-wrap gap-2 mb-4">
-          {company.companySize && (
-            <div className="bg-[#2a2a2a] text-slate-300 text-xs px-2.5 py-1 rounded-full border border-[#2d2d2d]">
-              {company.companySize} employees
-            </div>
-          )}
-          {company.establishedYear && (
-            <div className="bg-[#2a2a2a] text-slate-300 text-xs px-2.5 py-1 rounded-full border border-[#2d2d2d]">
-              Est. {company.establishedYear}
-            </div>
-          )}
-          {company.tradeRole && (
-            <div className="bg-[#2a2a2a] text-slate-300 text-xs px-2.5 py-1 rounded-full border border-[#2d2d2d]">
-              {company.tradeRole}
-            </div>
-          )}
-        </div>
-        
-        <Link href={`/company/${company.idCompany}`}>
-          <Button className="w-full bg-gradient-to-r from-[#F01457] to-[#F01457]/80 text-white hover:shadow-lg transition-shadow">
-            View Details
-          </Button>
-        </Link>
-      </div>
-    </Card>
-  );
-}
-
-// Skeleton loader for company cards
-function CompanyCardSkeleton() {
-  return (
-    <Card className="bg-[#222222] rounded-2xl border border-[#2d2d2d] overflow-hidden animate-pulse">
-      {/* Image header skeleton with proper aspect ratio */}
-      <div className="relative pt-[56.25%] bg-slate-700"> {/* 16:9 aspect ratio */}
-        <div className="absolute inset-0 bg-slate-700"></div>
-      </div>
-      
-      {/* Info section skeleton */}
-      <div className="p-5">
-        <div className="h-4 bg-slate-700 rounded-full w-1/4 mb-3"></div>
-        <div className="h-5 bg-slate-700 rounded w-3/4 mb-2"></div>
-        <div className="h-3 bg-slate-700 rounded w-full mb-2"></div>
-        <div className="h-3 bg-slate-700 rounded w-4/5 mb-4"></div>
-        
-        {/* Chip skeleton */}
-        <div className="flex flex-wrap gap-2 mb-4">
-          <div className="h-6 w-20 bg-slate-700 rounded-full"></div>
-          <div className="h-6 w-24 bg-slate-700 rounded-full"></div>
-          <div className="h-6 w-16 bg-slate-700 rounded-full"></div>
-        </div>
-        
-        <div className="w-full h-10 bg-slate-700 rounded"></div>
-      </div>
-    </Card>
-  );
-}
 
 interface ExploreCompaniesClientProps {
   initialCompanies: CompanyType[];
@@ -343,7 +251,7 @@ export default function ExploreCompaniesClient({
           
           {/* Results Count */}
           <div className="text-center text-slate-400 mb-8">
-            {isLoading ? 'Loading...' : `${companies.length} companies found`}
+            {isLoading ? 'Loading...' : `Total Companies Registered : ${companies.length}`}
           </div>
         </div>
       </section>
@@ -354,13 +262,13 @@ export default function ExploreCompaniesClient({
           {isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {[...Array(12)].map((_, i) => (
-                <CompanyCardSkeleton key={i} />
+                <CompanyCardSkeleton key={i} aspectRatio="video" />
               ))}
             </div>
           ) : companies.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {companies.map((company) => (
-                <CompanyCard key={company.idCompany} company={company} />
+                <CompanyCard key={company.idCompany} company={company} aspectRatio="video" />
               ))}
             </div>
           ) : (

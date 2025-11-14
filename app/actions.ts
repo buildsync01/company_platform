@@ -256,3 +256,61 @@ export async function getLimitedCompanies(limit: number = 50) { // Increased def
         return [];
     }
 }
+
+// Function to get all products with pagination
+export async function getAllProducts(page: number = 1, limit: number = 12) {
+    try {
+        const offset = (page - 1) * limit;
+        const allProducts = await db.query.products.findMany({
+            offset: offset,
+            limit: limit,
+            with: {
+                company: true
+            },
+            orderBy: (products, { desc }) => desc(products.createdAt),
+        });
+        return allProducts;
+    } catch (error) {
+        console.error('Error fetching products:', error);
+        return [];
+    }
+}
+
+// Function to get product count for pagination
+export async function getProductsCount() {
+    try {
+        const count = await db.select({ count: db.fn.count() }).from(products);
+        return count[0].count;
+    } catch (error) {
+        console.error('Error fetching product count:', error);
+        return 0;
+    }
+}
+
+// Function to search products
+export async function searchProducts(query: string, page: number = 1, limit: number = 12) {
+    try {
+        if (!query) {
+            return await getAllProducts(page, limit);
+        }
+        
+        const offset = (page - 1) * limit;
+        const searchResults = await db.query.products.findMany({
+            where: or(
+                ilike(products.name, `%${query}%`),
+                ilike(products.description, `%${query}%`)
+            ),
+            offset: offset,
+            limit: limit,
+            with: {
+                company: true
+            },
+            orderBy: (products, { desc }) => desc(products.createdAt),
+        });
+        
+        return searchResults;
+    } catch (error) {
+        console.error('Error searching products:', error);
+        return [];
+    }
+}

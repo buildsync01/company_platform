@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { useUser } from '@clerk/nextjs';
+import { useSession } from '@/lib/session-provider'; // Using custom auth provider
 import { useState } from 'react';
 import AuthWallModal from '@/components/ui/auth-wall-modal';
 import Link from 'next/link';
@@ -11,12 +11,12 @@ interface ProductContactClientProps {
 }
 
 export default function ProductContactClient({ product }: ProductContactClientProps) {
-  const { isSignedIn } = useUser();
+  const { user, isLoading } = useSession(); // Using custom auth provider
   const [showAuthModal, setShowAuthModal] = useState(false);
 
   const handleContactClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    if (!isSignedIn) {
+    if (!user) {
       setShowAuthModal(true);
     } else {
       // In a real app, you would navigate to the contact form
